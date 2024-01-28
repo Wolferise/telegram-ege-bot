@@ -1,0 +1,68 @@
+---
+- name: Setup environment
+  hosts: telegram_bot
+  become: true
+  gather_facts: true
+
+  tasks:
+  - name: Install prerequisite packages for further deployment processes
+    ansible.builtin.apt:
+      name: "{{ item }}"
+      update_cache: true
+      state: present
+    loop:
+      - python3-pip
+  - name: Create telegram user group
+    ansible.builtin.group:
+      name: telegram
+      state: present
+  - name: Create bot user
+    ansible.builtin.user:
+      name: telegram
+      groups: telegram
+      append: true
+      shell: /bin/bash
+      createhome: true
+      generate_ssh_key: true
+      ssh_key_bits: 2048
+      ssh_key_file: .ssh/id_rsa
+  - name: Create project folders
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: directory
+      owner: telegram
+      group: telegram
+      mode: '0770'
+    loop:
+      - /opt/telegram
+      - /opt/telegram/logs
+  - name: Copy project code onto remote host
+    ansible.builtin.template:
+      src: "{{ item }}"
+      dest: /opt/telegram
+      owner: telegram
+      group: telegram
+      mode: "0774"
+    loop:
+      - application/logger.py
+      - application/main.py
+      - .env
+      - requirements.txt
+    tags: update
+  - name: Install specified python requirements
+    ansible.builtin.pip:
+      requirements: /opt/telegram/requirements.txt
+    tags: update
+  - name: Setup systemd service
+    ansible.builtin.template:
+      src: inventory/group_vars/telegram-bot.service
+      dest: /lib/systemd/system
+      owner: root
+      group: telegram
+      mode: '0774'
+  - name: Restart telegram bot instance
+    ansible.builtin.systemd_service:
+      state: restarted
+      name: telegram-bot
+      daemon_reload: true
+      enabled: true

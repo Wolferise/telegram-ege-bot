@@ -1,0 +1,9 @@
+all:
+  children:
+    telegram_bot:
+      hosts:
+        89.23.117.71:
+          ansible_port: 22
+          ansible_user: iburenkov
+          ansible_python_interpreter: /usr/bin/python3
+          ansible_ssh_private_key_file: ~/id_rsa_2

@@ -1,0 +1,11 @@
+[Unit]
+Description=Telegram bot backend instance
+After=network.target
+
+[Service]
+User=telegram
+Group=telegram
+ExecStart=python3 /opt/telegram/main.py
+
+[Install]
+WantedBy=default.target

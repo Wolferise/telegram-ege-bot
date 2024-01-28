@@ -3,6 +3,7 @@ import inspect
 import os
 import traceback
 
+
 # logger class (should be singleton)
 class Logger:
     def __init__(self):
@@ -20,14 +21,14 @@ class Logger:
             # get caller function name for logging
             caller = inspect.stack()[1][3]
         # format log
-        log =  ' | '.join([cur_timestamp, type, caller, message])
+        log = ' | '.join([cur_timestamp, type, caller, message])
         # print into console
         print(log)
         # append line to logfile
         with open(self.logfile_path, 'a') as f:
             f.writelines([log, '\n'])
             f.close()
-    
+
     # decorator function for telegram bot for managing exceptions
     def crash_log(self, func):
         def wrap(*args):
@@ -38,4 +39,5 @@ class Logger:
                 # if any exception is caught, save error logs
                 self.log('ERROR', getattr(e, 'message', str(e)).replace('\n', '\\n').replace('\r', '\\r')[:989])
                 self.log('ERROR', traceback.format_exc())
+
         return wrap

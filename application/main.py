@@ -1,5 +1,5 @@
-from logger import Logger
 from dotenv import load_dotenv
+from logger import Logger
 import os
 import telebot
 
