@@ -66,3 +66,4 @@
       name: telegram-bot
       daemon_reload: true
       enabled: true
+    tags: update

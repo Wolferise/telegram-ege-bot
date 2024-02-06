@@ -2,6 +2,8 @@ from dotenv import load_dotenv
 from logger import Logger
 import os
 import telebot
+import buttons
+import messages
 # load secrets from .env
 load_dotenv()
 # initialize telegram bot backend and logger instance
@@ -11,35 +13,17 @@ logger = Logger()
 
 # message handling functions
 @bot.message_handler(commands=['start'])
-def startBot(message):
-  first_mess = f"<b>{message.from_user.first_name} {message.from_user.last_name}</b>, привет!\nЗадачи на какую тему вас интересуют?"
+@logger.crash_log
+def theme_selection(message):
+  bot_response = messages.greeting(message.from_user.first_name, message.from_user.last_name)
   markup = telebot.types.InlineKeyboardMarkup()
-  button_planim = telebot.types.InlineKeyboardButton(text = 'Тип 1: Планиметрия', callback_data='1')
-  markup.add(button_planim)
-  button_vector = telebot.types.InlineKeyboardButton(text='Тип 2: Векторы', callback_data='2')
-  markup.add(button_vector)
-  button_sterio = telebot.types.InlineKeyboardButton(text='Тип 3: Стереометрия', callback_data='3')
-  markup.add(button_sterio)
-  button_terver = telebot.types.InlineKeyboardButton(text='Тип 4: Начала теории вероятностей', callback_data='4')
-  markup.add(button_terver)
-  button_terver1 = telebot.types.InlineKeyboardButton(text='Тип 5: Вероятности сложных событий', callback_data='5')
-  markup.add(button_terver1)
-  button_terver2 = telebot.types.InlineKeyboardButton(text='Тип 6: Простейшие уравнения', callback_data='6')
-  markup.add(button_terver2)
-  button_terver3 = telebot.types.InlineKeyboardButton(text='Тип 7: Вычисления и преобразования', callback_data='7')
-  markup.add(button_terver3)
-  button_terver4 = telebot.types.InlineKeyboardButton(text='Тип 8: Производная и первообразная', callback_data='8')
-  markup.add(button_terver4)
-  button_terver5 = telebot.types.InlineKeyboardButton(text='Тип 9: Задачи с прикладным содержанием', callback_data='9')
-  markup.add(button_terver5)
-  button_terver6 = telebot.types.InlineKeyboardButton(text='Тип 10: Текстовые задачи', callback_data='10')
-  markup.add(button_terver6)
-  button_no = telebot.types.InlineKeyboardButton(text='Мне это не нужно!', callback_data='no')
-  markup.add(button_no)
-  bot.send_message(message.chat.id, first_mess, parse_mode='html', reply_markup=markup)
+  for button in buttons.start:
+      markup.add(telebot.types.InlineKeyboardButton(text=button['text'], callback_data=button['callback_data']))
+  bot.send_message(message.chat.id, bot_response, parse_mode='html', reply_markup=markup)
 
 @bot.callback_query_handler(func=lambda call:True)
-def response(function_call):
+@logger.crash_log
+def theme_selection_response(function_call):
   if function_call.message:
      if function_call.data == "1":
         second_mess = "О! Это хорошая и очень интересная тема! У неё есть несколько подтем:"
@@ -146,6 +130,16 @@ def response(function_call):
         markup = telebot.types.InlineKeyboardMarkup()
         markup.add(telebot.types.InlineKeyboardButton("А вот и ссылка:" , url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"))
         bot.send_message(function_call.message.chat.id, second_mess, reply_markup=markup)
+      '''
+     bot_response = messages.theme_select_response[function_call.data]
+     markup = telebot.types.InlineKeyboardMarkup()
+     for button in buttons.theme_response[function_call.data]:
+        markup.add(telebot.types.InlineKeyboardButton(text=button['text'],
+                                                      url=button['url']))
+        bot.send_message(function_call.message.chat.id, bot_response, reply_markup=markup)
+     '''
+          
+
 @bot.message_handler(func=lambda m: True)
 @logger.crash_log
 def echo_all(message):
